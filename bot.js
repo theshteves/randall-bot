@@ -6,6 +6,26 @@ var keys = require("./keys.js");
 var token = keys.token;
 var slack = new Slack(token, true, true);
 
+// Initialize Island Object Constructor
+function island(user, upvotes, downvotes) {
+    this.user = user;
+    this.upvotes = upvotes;
+    this.downvotes = downvotes;
+}
+
+// Define function getUser for listing all users
+var getUsers = function(channel) {
+    if (channel.name != "yoshis-story") {
+	return [];
+    }
+
+    var user_list = [];
+    for (var i = 0; i < channel.members.length; i++) {
+	user_list.push(slack.getUserByID(channel.members[i]).name);
+    }
+    return user_list;
+};
+
 
 slack.on('open', function () {
     var channels = Object.keys(slack.channels)
@@ -30,6 +50,7 @@ slack.on('open', function () {
     if (groups.length > 0) {
 	console.log('As well as: ' + groups.join(', '));
     }
+
 });
 
 slack.login();
@@ -38,9 +59,37 @@ slack.on('message', function(message) {
     var channel = slack.getChannelGroupOrDMByID(message.channel);
     var user = slack.getUserByID(message.user);
 
+
+    // Verify that user is on Island
+
+
+    // Log message
     if (message.type === 'message') {
-	console.log(channel.name + ':' + user.name + ':' + message.text);
+	console.log("[#" + channel.name + "] " + user.name + " | " + message.text);
     }
 
-    //Insert commands here
+
+    // User upvote
+    if (message.text.indexOf(":yoshiegg:") != -1 ) {
+	var the_msg = message.text.substring(message.text.indexOf(":yoshiegg:"));
+
+	//if (the_msg.indexOf(user.name) != -1 )
+	//{
+
+	//}
+    }
+
+
+    // User downvote
+
+
+
+    // User status
+    if (message.text.substring(0,6) == "status") {
+	console.log(getUsers(channel));
+
+	if (message.text.indexOf(getUsers(channel), 0)) {
+	    channel.send("[" + message.text.substring(7) + "]\n:yoshiegg: 1\n:yoshi: 0");
+	}
+    }
 });
