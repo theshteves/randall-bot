@@ -37,9 +37,9 @@ slack.on('open', function () {
 
     // Fill island with players
     slack.channels.C08V4V25T.members.forEach(function(person_id) {
-	    island[slack.getUserByID(person_id).name] = [["smaple"], ["sample"], ["sapmle"]];
+	    island[slack.getUserByID(person_id).name] = [[], [], []];
     });
-    console.log("\n[=====[THE ISLAND]=====]\n", island);
+    console.log("\n[=====[THE ISLAND]=====]\n", island, "\n");
 });
 
 
@@ -70,17 +70,53 @@ slack.on('message', function(message) {
 
     // command - status
     if (message.text.substring(0,6) == "status" && isUser(message.text.substring(7))) {
-	channel.send(":yoshiegg: " + message.text.substring(7) + " :yoshiegg:\n"
-		     + "upvotes: " + island[message.text.substring(7)][0] + "\n"
-		     + "downvotes: " + island[message.text.substring(7)][1]);
+	var usr = message.text.substring(7);
+	channel.send(":yoshiegg: " + usr + " :yoshiegg:\n"
+		     + "upvotes: " + island[usr][0] + "\n"
+		     + "downvotes: " + island[usr][1]);
     }
 
 
     // command - upvote
+    if (message.text.substring(0,9) == ":randall:" && isUser(message.text.substring(10))) {
+	// submit upvote
+	console.log("[" + message.text.substring(10)  + "]  +1 from " + user.name);
+	if (island[message.text.substring(10)][0].indexOf(user.name, 0) == -1) {
+	    island[message.text.substring(10)][0].push(user.name);
+	}
+	// remove downvote if necessary
+	if (island[message.text.substring(10)][1].indexOf(user.name, 0) != -1) {
+	    island[message.text.substring(10)][1].splice(island[message.text.substring(10)][1].indexOf(user.name), 1);
+	}
+    }
 
 
     // command - downvote
+    if (message.text.substring(0,7) == ":yoshi:" && isUser(message.text.substring(8))) {
+	// submit downvote
+	console.log("[" + message.text.substring(8)  + "]  -1 from " + user.name);
+	if (island[message.text.substring(8)][1].indexOf(user.name, 0) == -1) {
+	    island[message.text.substring(8)][1].push(user.name);
+	}
+	// remove upvote if necessary
+	if (island[message.text.substring(8)][0].indexOf(user.name, 0) != -1) {
+	    island[message.text.substring(8)][0].splice(island[message.text.substring(8)][0].indexOf(user.name), 1);
+	}
+    }
 
+
+    // command - summon
+    if (message.text.substring(0,10) == ":yoshiegg:" && isUser(message.text.substring(11))) {
+	// submit summon
+	console.log("[" + message.text.substring(8)  + "]  summon from " + user.name);
+	if (island[message.text.substring(11)][2].indexOf(user.name, 0) == -1) {
+	    island[message.text.substring(11)][2].push(user.name);
+	}
+    }
+
+    /*
+      durr-specific commands
+    */
 
     // Shameless self-promotion
     if (message.text.indexOf("Face The Falcon", 0) != -1) {
@@ -91,17 +127,16 @@ slack.on('message', function(message) {
     }
 
 
-    /*
-      User-specific commands
-    */
-
-    // "Who'a your daddy?"
+    // command - "Who's your daddy?"
     if (message.text.indexOf("Who's your daddy?", 0) != -1) {
-	console.log(user.name);
-	if (user.name == "durr") {
+	console.log(user);
+	if (user == "durr") {
 	    channel.send("You're my daddy :randall:");
 	} else {
 	    channel.send("durr's my daddy :randall:");
 	}
     }
+
+
+
 });
