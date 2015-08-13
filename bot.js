@@ -6,25 +6,9 @@ var keys = require("./keys.js");
 var token = keys.token;
 var slack = new Slack(token, true, true);
 
-// Initialize Island Object Constructor
-function island(user, upvotes, downvotes) {
-    this.user = user;
-    this.upvotes = upvotes;
-    this.downvotes = downvotes;
-}
 
-// Define function getUser for listing all users
-var getUsers = function(channel) {
-    if (channel.name != "yoshis-story") {
-	return [];
-    }
-
-    var user_list = [];
-    for (var i = 0; i < channel.members.length; i++) {
-	user_list.push(slack.getUserByID(channel.members[i]).name);
-    }
-    return user_list;
-};
+// Initialize island
+var island = {};
 
 
 slack.on('open', function () {
@@ -32,64 +16,92 @@ slack.on('open', function () {
 	.map(function (k) { return slack.channels[k]; })
 	.filter(function (c) { return c.is_member; })
 	.map(function (c) { return c.name; });
-
     var groups = Object.keys(slack.groups)
 	.map(function (k) { return slack.groups[k]; })
 	.filter(function (g) { return g.is_open && !g.is_archived; })
 	.map(function (g) { return g.name; });
 
-    console.log('Welcome to Slack. You are ' + slack.self.name + ' of ' + slack.team.name);
 
+    // Login Info Display
+    console.log('Welcome to Slack. You are ' + slack.self.name + ' of ' + slack.team.name);
     if (channels.length > 0) {
 	console.log('You are in: ' + channels.join(', '));
     }
     else {
 	console.log('You are not in any channels.');
     }
-
     if (groups.length > 0) {
 	console.log('As well as: ' + groups.join(', '));
     }
 
+
+    // Fill island with players
+    slack.channels.C08V4V25T.members.forEach(function(person_id) {
+	    island[slack.getUserByID(person_id).name] = [["smaple"], ["sample"], ["sapmle"]];
+    });
+    console.log("\n[=====[THE ISLAND]=====]\n", island);
 });
 
+
 slack.login();
+
 
 slack.on('message', function(message) {
     var channel = slack.getChannelGroupOrDMByID(message.channel);
     var user = slack.getUserByID(message.user);
 
 
-    // Verify that user is on Island
-
-
     // Log message
     if (message.type === 'message') {
-	console.log("[#" + channel.name + "] " + user.name + " | " + message.text);
+	try {
+	    console.log("[#" + channel.name + "] " + user.name + " | " + message.text);
+	} catch (err) {} // For "user is not defined" error
     }
 
 
-    // User upvote
-    if (message.text.indexOf(":yoshiegg:") != -1 ) {
-	var the_msg = message.text.substring(message.text.indexOf(":yoshiegg:"));
+    // Verifies if text represents player
+    var isUser = function(text) {
+	if (island.hasOwnProperty(text)) {
+	    return true;
+	}
+	return false;
+    };
 
-	//if (the_msg.indexOf(user.name) != -1 )
-	//{
 
-	//}
+    // command - status
+    if (message.text.substring(0,6) == "status" && isUser(message.text.substring(7))) {
+	channel.send(":yoshiegg: " + message.text.substring(7) + " :yoshiegg:\n"
+		     + "upvotes: " + island[message.text.substring(7)][0] + "\n"
+		     + "downvotes: " + island[message.text.substring(7)][1]);
     }
 
 
-    // User downvote
+    // command - upvote
 
 
+    // command - downvote
 
-    // User status
-    if (message.text.substring(0,6) == "status") {
-	console.log(getUsers(channel));
 
-	if (message.text.indexOf(getUsers(channel), 0)) {
-	    channel.send("[" + message.text.substring(7) + "]\n:yoshiegg: 1\n:yoshi: 0");
+    // Shameless self-promotion
+    if (message.text.indexOf("Face The Falcon", 0) != -1) {
+	channel.send("https://www.youtube.com/watch?v=YXPLysfBeag");
+    }
+    if (message.text.indexOf("Embrace The Falcon", 0) != -1) {
+	channel.send("https://www.youtube.com/watch?v=fG982Lt-F7k");
+    }
+
+
+    /*
+      User-specific commands
+    */
+
+    // "Who'a your daddy?"
+    if (message.text.indexOf("Who's your daddy?", 0) != -1) {
+	console.log(user.name);
+	if (user.name == "durr") {
+	    channel.send("You're my daddy :randall:");
+	} else {
+	    channel.send("durr's my daddy :randall:");
 	}
     }
 });
