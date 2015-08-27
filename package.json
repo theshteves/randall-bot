@@ -1,6 +1,5 @@
 {
     "name": "randall-bot",
-    "version": "0.9",
     "description": "A silly IRC bot for Slack",
     "author": "Steven Kneiser <stevenkneiser@gmail.com>",
     "repository": {
@@ -9,8 +8,8 @@
     },
     "dependencies": {
 	"express": "4.2.x",
+	"mongodb": "2.0.x",
 	"slack-client": "1.4.x"
-	"mongodb": "2.0.x"
     },
     "bugs": {
 	"url": "https://github.com/theshteves/randall-bot/issues"
