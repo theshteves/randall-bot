@@ -2,6 +2,7 @@
 
 var Slack = require("slack-client");
 var keys = require("./keys.js");
+//var db = require("./db.js");
 
 var token = keys.token;
 var slack = new Slack(token, true, true);
@@ -39,6 +40,8 @@ slack.on('open', function () {
     slack.channels.C08V4MUSF.members.forEach(function(person_id) {
 	    mainland[slack.getUserByID(person_id).name] = [];
     });
+    console.log("\n[=====[THE MAINLAND]=====]\n", mainland, "\n");
+
 
     // Fill island with #yoshis-story players
     slack.channels.C08V4V25T.members.forEach(function(person_id) {
@@ -63,12 +66,6 @@ slack.on('message', function(message) {
 	// Log message
 	if (message.type === 'message') {
 	    console.log("[#" + channel.name + "] " + user.name + " | " + message.text);
-	}
-
-
-	// command - debug
-	if (message.text.substring(0,4) == "help") {
-	    console.log(slack);
 	}
 
 
@@ -98,7 +95,7 @@ slack.on('message', function(message) {
 	// command - status
 	if (message.text.substring(0,6) == "status" && isUser(message.text.substring(7))) {
 	    var usr = message.text.substring(7);
-	    channel.send(":yoshiegg: " + usr + " :yoshiegg:\n"
+	    channel.send(":yoshiegg: " + usr.split("").join(" ") + " :yoshiegg:\n"
 			 + "upvotes: " + island[usr][0] + "\n"
 			 + "downvotes: " + island[usr][1]);
 	}
@@ -130,17 +127,24 @@ slack.on('message', function(message) {
 		island[message.text.substring(8)][0].splice(island[message.text.substring(8)][0].indexOf(user.name), 1);
 	    }
 	    // kick user off island
-	    if (island[message.text.substring(8)][1].length - island[message.text.substring(8)][0] >= 5) {
+	    if (island[message.text.substring(8)][1].length - island[message.text.substring(8)][0].length >= 3) {
 		console.log("[" + message.text.substring(8) + "]  has been voted off");
-		island[message.text.substring(8)][0] = 0;
-		island[message.text.substring(8)][1] = 0;
-		mainland[message.text.substring(8)] = 0;
+		island[message.text.substring(8)][0] = [];
+		island[message.text.substring(8)][1] = [];
+		mainland[message.text.substring(8)] = [];
+		channel.send(":yoshi::yoshi::yoshi::yoshiegg: " + message.text.substring(8) + " has been seized :yoshiegg::yoshi::yoshi::yoshi:");
 		if (message.text.substring(8) == "durr") {
-		    channel.send(":yoshi::yoshi::yoshi::yoshiegg: durr has been taken hostage :yoshiegg::yoshi::yoshi::yoshi:");
 		    channel.send(":yoshi::yoshi::yoshi::yoshiegg: durr must atone for his sins :yoshiegg::yoshi::yoshi::yoshi:");
-		    channel.send(":yoshi::yoshi::yoshi::yoshiegg: durr shall be judged :yoshiegg::yoshi::yoshi::yoshi:");
+		    channel.send(":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|              ---> :randall: I got you, durr :randall:\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+				 ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n");
 		} else {
-		    channel.send(":yoshi::yoshi::yoshi::yoshiegg: " + message.text.substring(8) + " has been taken hostage :yoshiegg::yoshi::yoshi::yoshi:");
 		    kickUser(message.text.substring(8));
 		}
 	    }
@@ -163,17 +167,39 @@ slack.on('message', function(message) {
 	}
 
 
-	/*
-	  durr-specific commands
-	*/
-
-
 	// shameless self-promotion
 	if (message.text.indexOf("Face The Falcon", 0) != -1) {
 	    channel.send("https://www.youtube.com/watch?v=YXPLysfBeag");
 	}
 	if (message.text.indexOf("Embrace The Falcon", 0) != -1) {
 	    channel.send("https://www.youtube.com/watch?v=fG982Lt-F7k");
+	}
+
+
+	// command - "SD"
+	if (message.text.toUpperCase().indexOf("SD", 0) != -1) {
+	    channel.send(user.name + "   ...I got you, bro");
+	}
+
+
+	/*
+	  user-specific commands
+	*/
+	if (user.name == "durr") {
+
+
+	    // command - help
+	    if (message.text.substring(0,4) == "help" && user.name == "durr") {
+		channel.send(":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|              ---> :randall: I got you, durr :randall:\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
+			     ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n");
+	    }
 	}
 
 
@@ -186,10 +212,54 @@ slack.on('message', function(message) {
 	    }
 	}
 
+	if (message.text.substring(0, 1) == "!") {
+	    /* --- Insert Bot Commands "![command]" --- */
 
-	// command - "SD"
-	if (message.text.toUpperCase().indexOf("SD", 0) != -1) {
-	    channel.send(user.name + "   ...I got you, bro");
+
+	    // !hey
+	    if (message.text.substring(1,4) == "hey") {
+		channel.send("hey, " + user.name);
+	    }
+
+
+	    // !roll
+	    if (message.text.substring(1,5) == "roll") {
+		var fate = "";
+		for (var i = 0; i < 2; i++) {
+		    var roll = Math.floor(Math.random() * 6) + 1;
+		    switch (roll) {
+		    case 1:
+			roll = ":one:";
+			break;
+		    case 2:
+			roll = ":two:";
+			break;
+		    case 3:
+			roll = ":three:";
+			break;
+		    case 4:
+			roll = ":four:";
+			break;
+		    case 5:
+			roll = ":five:"
+			break;
+		    case 6:
+			roll = ":six:";
+			break;
+		    }
+		    fate += " " + roll;
+		}
+		channel.send(user.name + fate);
+	    }
+
+
+	    // !help
+	    if (message.text.substring(1,5) == "help") {
+		channel.send(user.name + " nah.");
+	    }
+
+
 	}
+
     } catch (err) {}
 });
