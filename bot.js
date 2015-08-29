@@ -5,8 +5,9 @@ var Slack = require("slack-client");
 var keys = require("./keys.js");
 //var User = require("./db.js");
 
-var token = keys.token;
-var slack = new Slack(token, true, true);
+var api_token = keys.api_token;
+var admin_token = keys.admin_token;
+var slack = new Slack(api_token, true, true);
 
 
 // Initialize island
@@ -101,7 +102,7 @@ slack.on('message', function(message) {
 				 "_there was not a sound to be heard in the jungle_"];
 		var r = Math.floor(Math.random() * 3);
 
-		var requrl = "https://mgpublic.slack.com/api/groups.kick?token=xoxp-5199131090-6040919457-9806431428-2b26d0&channel=G09PNS7TL&user=" + person_id;
+		var requrl = "https://mgpublic.slack.com/api/groups.kick?token=" + admin_token + "&channel=G09PNS7TL&user=" + person_id;
 		request(requrl, function (error, response, body) {
 		    if (!error && response.statusCode == 200) {
 			console.log(body);
@@ -114,7 +115,7 @@ slack.on('message', function(message) {
 
 	    // invites user
 	    var inviteUser = function(person_id) {
-		var requrl = "https://mgpublic.slack.com/api/groups.invite?token=xoxp-5199131090-6040919457-9806431428-2b26d0&channel=G09PNS7TL&user=" + person_id;
+		var requrl = "https://mgpublic.slack.com/api/groups.invite?token=" + admin_token + "&channel=G09PNS7TL&user=" + person_id;
 		request(requrl, function (error, response, body) {
 		    if (!error && response.statusCode == 200) {
 			console.log(body);
