@@ -1,70 +1,25 @@
 // bot.js
 
-var request = require("request");
-var Slack = require("slack-client");
-var keys = require("./keys.js");
+var request = require("request"),
+    admin = require("./admin.js"),
+    Slack = require("slack-client"),
+    keys = require("./keys.js"),
+    login = require("./login.js");
 //var User = require("./db.js");
 
-var api_token = keys.api_token;
-var admin_token = keys.admin_token;
-var slack = new Slack(api_token, true, true);
+var api_token = keys.api_token,
+    admin_token = keys.admin_token,
+    slack = new Slack(api_token, true, true),
+    island = {},
+    mainland = {};
 
 
-// Initialize island
-var island = {};
-var mainland = {};
-
-slack.on('open', function () {
-    // Notify the group on startup
-    slack.groups.G09PNS7TL.send(":yoshiegg: [BOOTING UP]");
-    slack.groups.G09PNS7TL.send(":yoshiegg:");
-    slack.groups.G09PNS7TL.send(":yoshiegg:");
-
-    var channels = Object.keys(slack.channels)
-	.map(function (k) { return slack.channels[k]; })
-	.filter(function (c) { return c.is_member; })
-	.map(function (c) { return c.name; });
-    var groups = Object.keys(slack.groups)
-	.map(function (k) { return slack.groups[k]; })
-	.filter(function (g) { return g.is_open && !g.is_archived; })
-	.map(function (g) { return g.name; });
-
-
-    // Login Info Display
-    console.log('Welcome to Slack. You are ' + slack.self.name + ' of ' + slack.team.name);
-    if (channels.length > 0) {
-	console.log('You are in: ' + channels.join(', '));
-    }
-    else {
-	console.log('You are not in any channels.');
-    }
-    if (groups.length > 0) {
-	console.log('As well as: ' + groups.join(', '));
-    }
-
-    // For debugging purposes only:  console.log("<SLACK>\n\n", slack.groups, "\n\n</SLACK>");
-
-    // Fill mainland with all players
-    slack.channels.C055V3V3A.members.forEach(function(person_id) {
-	mainland[slack.getUserByID(person_id).name] = [[], person_id];
-    });
-    console.log("\n[=====[THE MAINLAND]=====]\n", mainland, "\n");
-
-
-    // Fill island with #yoshis-story players
-    slack.groups.G09PNS7TL.members.forEach(function(person_id) {
-	island[slack.getUserByID(person_id).name] = [[], [], person_id];
-    });
-    console.log("\n[=====[THE ISLAND]=====]\n", island, "\n");
-
-    slack.groups.G09PNS7TL.send(":randall:");
-});
-
-
-slack.login();
+// initialize island
+login(slack, island, mainland);
 
 
 slack.on('message', function(message) {
+
     // Catch errors
     try {
 
@@ -79,7 +34,9 @@ slack.on('message', function(message) {
 
 	    // Log message
 	    if (message.type === 'message') {
-		console.log("[#" + channel.name + "] " + user.name + " | " + message.text);
+		console.log("[#" + channel.name
+			    + "] " + user.name
+			    + " | " + message.text);
 	    }
 
 
@@ -126,15 +83,15 @@ slack.on('message', function(message) {
 	    };
 
 
-	    // displays user's status
+	    // function - displays user's status
 	    var status = function(text) {
 		if (isUser(text)) {
 		    if (!island.hasOwnProperty(text)) {
-			channel.send(":yoshiegg: " + text.split("").join(" ") + " :yoshiegg:   [" + mainland[text][0].length + "/4]\n"
+			channel.send(":yoshiegg: *" + text.split("").join(" ") + "* :yoshiegg:   [" + mainland[text][0].length + "/4]\n"
 				     + "summons:  " + String(mainland[text][0]).split("").join(" "));
 		    } else {
 			var net = (island[text][1].length - island[text][0].length)
-			channel.send(":yoshiegg: " + text.split("").join(" ") + " :yoshiegg:   [" + net + "/4]\n"
+			channel.send(":yoshiegg: *" + text.split("").join(" ") + "* :yoshiegg:   [" + net + "/4]\n"
 				     + "upvotes:  " + String(island[text][0]).split("").join(" ") + "\n"
 				     + "downvotes:  " + String(island[text][1]).split("").join(" "));
 		    }
@@ -143,17 +100,8 @@ slack.on('message', function(message) {
 
 
 	    // command - status
-	    if (message.text.substring(0,6) == "status" && isUser(message.text.substring(7))) {
-		var usr = message.text.substring(7);
-		if (!island.hasOwnProperty(usr)) {
-		    channel.send(":yoshiegg: " + usr.split("").join(" ") + " :yoshiegg:   [" + mainland[usr][0].length + "/4]\n"
-				 + "summons:  " + String(mainland[usr][0]).split("").join(" "));
-		} else {
-		    var net = (island[usr][1].length - island[usr][0].length)
-		    channel.send(":yoshiegg: " + usr.split("").join(" ") + " :yoshiegg:   [" + net + "/4]\n"
-				 + "upvotes:  " + String(island[usr][0]).split("").join(" ") + "\n"
-				 + "downvotes:  " + String(island[usr][1]).split("").join(" "));
-		}
+	    if (message.text.substring(0,6) == "status") {
+		status(message.text.substring(7));
 	    }
 
 
@@ -235,6 +183,7 @@ slack.on('message', function(message) {
 			    island[message.text.substring(8)][0] = [];
 			    island[message.text.substring(8)][1] = [];
 			    kickUser(island[message.text.substring(8)][2]);
+			    slack.getChannelOrGroupByID()
 			}
 		    }
 		}
@@ -264,54 +213,15 @@ slack.on('message', function(message) {
 	    }
 
 
-	    // shameless self-promotion
-	    if (message.text.toLowerCase().indexOf("face the falcon", 0) != -1) {
-		channel.send("https://www.youtube.com/watch?v=YXPLysfBeag");
-		console.log("Posted \"Face The Falcon\"");
-	    }
-	    if (message.text.toLowerCase().indexOf("embrace the falcon", 0) != -1) {
-		channel.send("https://www.youtube.com/watch?v=fG982Lt-F7k");
-		console.log("Posted \"Embrace The Falcon\"");
-	    }
-
-
-	    // command - "SD"
-	    /*
-	      if (message.text.toUpperCase().indexOf("SD", 0) != -1) {
-	      channel.send(user.name + "   ...I got you, bro");
-	      }
-	    */
-
-
 	    // command - help
 	    if (message.text == "help") {
-		channel.send(//slack.getUserByID(message.user).name + ", I got you bro.\n" +
-		    "UPVOTE:     `:randall: [username]`\n"
-			+ "DOWNVOTE: `:yoshi: [username]`\n"
-			+ "SUMMON:   `:yoshiegg: [username]`");
+		channel.send(""
+			     + "UPVOTE:      `:randall: [username]`\n"
+			     + "DOWNVOTE:    `:yoshi: [username]`\n"
+			     + "SUMMON:      `:yoshiegg: [username]`"
+			     + "VIEW STATUS: `status [username]`"
+			     + "ROLL DICE:   `roll`");
 	    }
-
-
-	    /*
-	      user-specific commands
-	    */
-	    /*
-	      if (user.name == "durr") {
-
-	      // command - help
-	      if (message.text.substring(0,4) == "help") {
-	      channel.send(":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|              ---> :randall: I got you, durr :randall:\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n" +
-	      ":yoshi::yoshi::yoshi::yoshi::yoshi::yoshi::yoshi:|\n");
-	      }
-	      }
-	    */
 
 
 	    // command - roll
@@ -345,6 +255,17 @@ slack.on('message', function(message) {
 	    }
 
 
+	    // shameless self-promotion
+	    if (message.text.toLowerCase().indexOf("face the falcon", 0) != -1) {
+		channel.send("https://www.youtube.com/watch?v=YXPLysfBeag");
+		console.log("Posted \"Face The Falcon\"");
+	    }
+	    if (message.text.toLowerCase().indexOf("embrace the falcon", 0) != -1) {
+		channel.send("https://www.youtube.com/watch?v=fG982Lt-F7k");
+		console.log("Posted \"Embrace The Falcon\"");
+	    }
+
+
 	    // command - "who is your daddy?"
 	    if (message.text.toLowerCase().indexOf("who is your daddy?", 0) != -1) {
 		if (user.name == "durr") {
@@ -353,32 +274,14 @@ slack.on('message', function(message) {
 		    channel.send("durr's my daddy :randall:");
 		}
 	    }
-
-
-	    if (message.text.substring(0, 1) == "#") {
-		/* --- Insert Bot Commands "#[command]" --- */
-
-
-		// #hey
-		if (message.text.substring(1,4) == "hey") {
-		    channel.send("hey, " + user.name);
-		}
-
-
-		// #help
-		if (message.text.substring(1,5) == "help") {
-		    channel.send(user.name + " nah.");
-		}
-
-
-	    }
 	}
 
 
-	// Commands for outside of yoshis-story
-	// command - ?
+	// global command - ?
 	if (message.text == "?") {
-	    channel.send(slack.getUserByID(message.user).name + "'s user ID is " + message.user);
+	    channel.send("[" + slack.getUserByID(message.user).name.split("").join(" ") + "]"
+			 + "\nuser ID: " + message.user
+			 + "\nchannel ID: " + message.channel);
 	}
 
 
