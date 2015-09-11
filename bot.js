@@ -5,7 +5,7 @@ var request = require("request"),
     Slack = require("slack-client"),
     keys = require("./keys.js"),
     login = require("./login.js");
-//var User = require("./db.js");
+var Island = require("./db.js");
 
 var api_token = keys.api_token,
     admin_token = keys.admin_token,
@@ -163,7 +163,7 @@ slack.on('message', function(message) {
 		    status(message.text.substring(8));
 
 		    // kick user off island
-		    if (island[message.text.substring(8)][1].length - island[message.text.substring(8)][0].length >= 4) { //FIX THIS NUMBER
+		    if (island[message.text.substring(8)][1].length - island[message.text.substring(8)][0].length >= 3) { //FIX THIS NUMBER
 			console.log("[" + message.text.substring(8) + "]  has been voted off");
 			channel.send(":yoshi::yoshi::yoshi::yoshiegg: " + message.text.substring(8) + " has been seized :yoshiegg::yoshi::yoshi::yoshi:");
 			if (message.text.substring(8) == "durr") {
@@ -192,23 +192,32 @@ slack.on('message', function(message) {
 
 
 	    // command - summon
-	    if (message.text.substring(0,10) == ":yoshiegg:" && isUser(message.text.substring(11))) {
-		// submit summon
-		if (mainland[message.text.substring(11)][0].indexOf(user.name, 0) == -1) {
-		    mainland[message.text.substring(11)][0].push(user.name);
-		}
+	    if (message.text.substring(0,10) == ":yoshiegg:") {
+		if (isUser(message.text.substring(11))) {
 
-		// log summon
-		console.log("[" + message.text.substring(11)  + "]  summon from " + user.name);
-		console.log(">>> " + mainland[message.text.substring(11)]);
-		status(message.text.substring(11));
+		    // submit summon
+		    if (mainland[message.text.substring(11)][0].indexOf(user.name, 0) == -1) {
+			mainland[message.text.substring(11)][0].push(user.name);
+		    }
 
-		// perform summoning
-		if (mainland[message.text.substring(11)][0].length >= 4) { //FIX THIS NUMBER
-		    mainland[message.text.substring(11)][0] = []
-		    inviteUser(mainland[message.text.substring(11)][1]);
-		    island[message.text.substring(11)] = [[], [], mainland[message.text.substring(11)][1]]
-		    console.log("[" + message.text.substring(11) + "]  has been summoned");
+		    // log summon
+		    console.log("[" + message.text.substring(11)  + "]  summon from " + user.name);
+		    console.log(">>> " + mainland[message.text.substring(11)]);
+		    status(message.text.substring(11));
+
+		    // perform summoning
+		    if (mainland[message.text.substring(11)][0].length >= 4) { //FIX THIS NUMBER
+			mainland[message.text.substring(11)][0] = []
+			inviteUser(mainland[message.text.substring(11)][1]);
+			island[message.text.substring(11)] = [[], [], mainland[message.text.substring(11)][1]]
+			console.log("[" + message.text.substring(11) + "]  has been summoned");
+		    }
+		} else {
+
+		    // add user to mainland if they recently joined
+		    //if (slack.channels.C055V3V3A.members.hasOwnProperty(message.text.substring(11))) {
+			//
+		    //}
 		}
 	    }
 
@@ -218,9 +227,28 @@ slack.on('message', function(message) {
 		channel.send(""
 			     + "UPVOTE:      `:randall: [username]`\n"
 			     + "DOWNVOTE:    `:yoshi: [username]`\n"
-			     + "SUMMON:      `:yoshiegg: [username]`"
-			     + "VIEW STATUS: `status [username]`"
+			     + "SUMMON:      `:yoshiegg: [username]`\n"
+			     + "VIEW STATUS: `status [username]`\n"
 			     + "ROLL DICE:   `roll`");
+	    }
+
+
+	    // when user leaves group, reinvite them
+	    if (message.text.indexOf("has left the group", 0) != -1) {
+		inviteUser(message.user);
+		channel.send(":yoshiegg: " + message.user + " has been summoned :yoshiegg:");
+		channel.send(":yoshi: " + message.user);
+	    }
+
+
+	    // command - add
+	    if (message.text.substring(0,3) == "add" && isUser(message.text.substring(4))) {
+		channel.send("got it.");
+		Island.addUser(message.text.substring(4),
+			       island[message.text.substring(4)][2],
+			       island[message.text.substring(4)][0],
+			       island[message.text.substring(4)][1]);
+		Island.findUser(message.text.substring(4));
 	    }
 
 

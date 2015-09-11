@@ -9,6 +9,7 @@
     "dependencies": {
 	"express": "4.2.x",
 	"mongodb": "2.0.x",
+	"mongoose": "4.1.x",
 	"slack-client": "1.4.x"
     },
     "bugs": {
