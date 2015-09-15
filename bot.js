@@ -99,6 +99,10 @@ slack.on('message', function(message) {
 	    };
 
 
+	    // function - writes to file
+	    // someday *tear**tear*
+
+
 	    // command - status
 	    if (message.text.substring(0,6) == "status") {
 		status(message.text.substring(7));
@@ -235,15 +239,17 @@ slack.on('message', function(message) {
 
 	    // when user leaves group, reinvite them
 	    if (message.text.indexOf("has left the group", 0) != -1) {
-		inviteUser(message.user);
-		channel.send(":yoshiegg: " + message.user + " has been summoned :yoshiegg:");
-		channel.send(":yoshi: " + message.user);
+		if (island.hasOwnProperty(message.user)) {
+		    inviteUser(message.user);
+		}
+		channel.send(":yoshi: " + slack.getUserByID(message.user).name);
 	    }
 
 
 	    // command - add
 	    if (message.text.substring(0,3) == "add" && isUser(message.text.substring(4))) {
-		channel.send("got it.");
+		channel.send("==> " + message.text.substring(4));
+		channel.send("{ [MongoError: connect ECONNREFUSED] name: 'MongoError', message: 'connect ECONNREFUSED' }");
 		Island.addUser(message.text.substring(4),
 			       island[message.text.substring(4)][2],
 			       island[message.text.substring(4)][0],
