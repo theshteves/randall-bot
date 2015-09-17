@@ -5,7 +5,7 @@ var request = require("request"),
     Slack = require("slack-client"),
     keys = require("./keys.js"),
     login = require("./login.js");
-var Island = require("./db.js");
+// var Island = require("./db.js");
 
 var api_token = keys.api_token,
     admin_token = keys.admin_token,
@@ -87,11 +87,11 @@ slack.on('message', function(message) {
 	    var status = function(text) {
 		if (isUser(text)) {
 		    if (!island.hasOwnProperty(text)) {
-			channel.send(":yoshiegg: *" + text.split("").join(" ") + "* :yoshiegg:   [" + mainland[text][0].length + "/4]\n"
+			channel.send(":yoshiegg: *" + text.split("").join(" ") + "* :yoshiegg:   [" + mainland[text][0].length + "/3]\n"
 				     + "summons:  " + String(mainland[text][0]).split("").join(" "));
 		    } else {
 			var net = (island[text][1].length - island[text][0].length)
-			channel.send(":yoshiegg: *" + text.split("").join(" ") + "* :yoshiegg:   [" + net + "/4]\n"
+			channel.send(":yoshiegg: *" + text.split("").join(" ") + "* :yoshiegg:   [" + net + "/5]\n"
 				     + "upvotes:  " + String(island[text][0]).split("").join(" ") + "\n"
 				     + "downvotes:  " + String(island[text][1]).split("").join(" "));
 		    }
@@ -167,7 +167,7 @@ slack.on('message', function(message) {
 		    status(message.text.substring(8));
 
 		    // kick user off island
-		    if (island[message.text.substring(8)][1].length - island[message.text.substring(8)][0].length >= 3) { //FIX THIS NUMBER
+		    if (island[message.text.substring(8)][1].length - island[message.text.substring(8)][0].length >= 5) { //FIX THIS NUMBER
 			console.log("[" + message.text.substring(8) + "]  has been voted off");
 			channel.send(":yoshi::yoshi::yoshi::yoshiegg: " + message.text.substring(8) + " has been seized :yoshiegg::yoshi::yoshi::yoshi:");
 			if (message.text.substring(8) == "durr") {
@@ -210,7 +210,7 @@ slack.on('message', function(message) {
 		    status(message.text.substring(11));
 
 		    // perform summoning
-		    if (mainland[message.text.substring(11)][0].length >= 4) { //FIX THIS NUMBER
+		    if (mainland[message.text.substring(11)][0].length >= 3) { //FIX THIS NUMBER
 			mainland[message.text.substring(11)][0] = []
 			inviteUser(mainland[message.text.substring(11)][1]);
 			island[message.text.substring(11)] = [[], [], mainland[message.text.substring(11)][1]]
@@ -239,7 +239,7 @@ slack.on('message', function(message) {
 
 	    // when user leaves group, reinvite them
 	    if (message.text.indexOf("has left the group", 0) != -1) {
-		if (island.hasOwnProperty(message.user)) {
+		if (island.hasOwnProperty(slack.getUserByID(message.user).name)) {
 		    inviteUser(message.user);
 		}
 		channel.send(":yoshi: " + slack.getUserByID(message.user).name);
