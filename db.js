@@ -1,56 +1,74 @@
 // db.js
 
-var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
+// grab the things we need
+var mongoose = require('mongoose');
+var db = mongoose.connection;
 
-var url = 'mongodb://localhost:27017/test';
-MongoClient.connect(url, function(err, db) {
-    assert.equal(null, err);
-    console.log("Connected correctly to server.");
+db.on('error', console.error);
+db.once('open', function(callback) {
 
-    insertDocuments(db, function() {
-	db.close();
+
+    // Create your schemas and models here.
+    var Schema = mongoose.Schema;
+
+
+    // create a schema
+    var islandSchema = new Schema({
+	name: String,
+	id: String,
+	up: Array,
+	down: Array
     });
+
+
+    // the schema is useless so far
+    // we need to create a model using it
+    var Island = mongoose.model('Island', islandSchema);
+
+
+    // make this available to our users in our Node applications
+    module.exports = Island;
+
+
+    exports.addUser = function(username, user_id, upvotes, downvotes) {
+	// Adds user
+	new Island({
+	    name: username,
+	    id: user_id,
+	    up: upvotes,
+	    down: downvotes
+	}).save();
+    };
+
+
+    exports.findUser = function(username) {
+	// Finds user
+	Island.findOne({ name: username }, function(err, results) {
+	    if (err) return console.error(err);
+	    console.dir(results);
+	});
+    };
+
+
+    exports.upvote = function(username, upvotes) {
+	// Upvotes user
+	Island.findOneAndModify({name: username}, {up: upvotes}, {upsert:true}, function(err, results) {
+	    if (err) return console.error(err);
+	    console.dir(results);
+	});
+    };
+
+
+    exports.downvote = function(username) {
+	// Downvotes user
+
+    };
+
+
+    exports.removeUser = function(username) {
+	// Removes User
+
+    };
 });
 
-var insertDocuments = function(db, callback) {
-    // Get the documents collection
-    var collection = db.collection('documents');
-    // Insert some documents
-    collection.insert([
-	{a : 1}, {a : 2}, {a : 3}
-    ], function(err, result) {
-	assert.equal(err, null);
-	assert.equal(3, result.result.n);
-	assert.equal(3, result.ops.length);
-	console.log("Inserted 3 documents into the document collection");
-	callback(result);
-    });
-}
-
-/*
-exports.addUser = function(user) {
-    // Adds user
-
-};
-
-exports.findUser = function(user) {
-    // Finds user
-
-};
-
-exports.upUser = function(user) {
-    // Upvotes user
-
-};
-
-exports.downUser = function(user) {
-    // Downvotes user
-
-};
-
-exports.removeUser = function(user) {
-    // Removes User
-
-};
-*/
+mongoose.connect('mongodb://localhost/island');
