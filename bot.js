@@ -84,6 +84,7 @@ slack.on('message', function(message) {
 		    if (!error && response.statusCode == 200) {
 			console.log(body);
 		    }
+		});
 		channel.send(DIALOGUES[r]);
 		return true;
 	    };
