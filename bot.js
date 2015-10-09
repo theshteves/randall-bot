@@ -54,9 +54,28 @@ slack.on('message', function(message) {
 
 	    // kicks user
 	    var kickUser = function(person_id) {
-		var DIALOGUES = ["_a screach was heard in the distance__",
-				 "_they must atone for their sins__",
-				 "_there was not a sound to be heard in the jungle_"];
+		var DIALOGUES = [">>> _\"Never in the field of human conflict was so much owed by so many to so few.\"  -:yoshi: Churchill_",
+				 ">>> _\"Success is not final, failure is not fatal: it is the courage to continue that counts.\"  -:yoshi: Churchill_",
+				 ">>> _\"Ours is a world of nuclear giants and ethical infants. We know more about war than we know about peace, more about killing than we know about living.\"  -General :yoshi: Bradley_",
+				 ">>> _\"They died hard, those savage men - like wounded wolves at bay. They were filthy, and they were lousy, and they stunk. And I loved them.\"  -General :yoshi: MacArthur_",
+				 ">>> _\"We must be prepared to make heroic sacrifices for the cause of peace that we make ungrudgingly for the cause of war. There is no task that is more important or closer to my heart.\"  -:yoshi: Einstein_",
+				 ">>> _\"Future years will never know the seething hell and the black infernal background, the countless minor scenes and interiors of the secession war; and it is best they should not. The real war will never get in the books.\"  -:yoshi: Whitman_",
+				 ">>> _\"There's no honorable way to kill, no gentle way to destroy. There is nothing good in war. Except its ending.\"  -:yoshi: Lincoln_",
+				 ">>> _\"The death of one man is a tragedy. The death of millions is a statistic.\"  -:yoshi: Stalin_",
+				 ">>> _\"Death solves all problems - no man, no problem.\"  -:yoshi: Stalin_",
+				 ">>> _\"All wars are civil wars, because all men are brothers.\"  -:yoshi: Fenelon_",
+				 ">>> _\"Only the dead have seen the end of war.\"  -:yoshi: Plato_",
+				 ">>> _\"It is well that war is so terrible, or we should get too fond of it.\"  -Robert :yoshi: Lee_",
+				 ">>> _\"If we don't end war, war will end us.\"  -H. G. :yoshi:_",
+				 ">>> _\"It is better to die on your feet than to live on your knees!\"  -:yoshi: Zapata_",
+				 ">>> _\"In war there is no substitute for victory.\"  -General :yoshi: MacArthur_",
+				 ">>> _\"War does not determine who is right, only who is left.\"  -:yoshi: Russell_",
+				 ">>> _\"A man may die, nations may rise and fall, but an idea lives on.\"  -John :yoshi: Kennedy_",
+				 ">>> _\"All warfare is based on deception.\"  -:yoshi: Tzu_",
+				 ">>> _\"Every tyrant who has lived has believed in freedom - for himself.\"  -:yoshi: Hubbard_",
+				 ">>> _\"All your base are belong to us\"  -:yoshi: :yoshi: :yoshi:_",
+				 ">>> _\"If our country is worth dying for in time of war let us resolve that it is truly worth living for in time of peace.\"  -:yoshi: Fish_",
+				 ">>> _\"Principle is OK up to a certain point, but principle doesn't do any good if you lose.\"  -:yoshi: Cheney_"];
 		var r = Math.floor(Math.random() * 3);
 
 		var requrl = "https://mgpublic.slack.com/api/groups.kick?token=" + admin_token + "&channel=G09PNS7TL&user=" + person_id;
@@ -65,7 +84,7 @@ slack.on('message', function(message) {
 			console.log(body);
 		    }
 		})
-		channel.send(DIALOGUES(r));
+		channel.send(DIALOGUES[r]);
 		return true;
 	    };
 
