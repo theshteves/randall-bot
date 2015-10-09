@@ -77,13 +77,13 @@ slack.on('message', function(message) {
 				 ">>> _\"If our country is worth dying for in time of war let us resolve that it is truly worth living for in time of peace.\"  -:yoshi: Fish_",
 				 ">>> _\"Principle is OK up to a certain point, but principle doesn't do any good if you lose.\"  -:yoshi: Cheney_"];
 		var r = Math.floor(Math.random() * 3);
-
+		
+		delete island[slack.getUserByID(person_id).name];
 		var requrl = "https://mgpublic.slack.com/api/groups.kick?token=" + admin_token + "&channel=G09PNS7TL&user=" + person_id;
 		request(requrl, function (error, response, body) {
 		    if (!error && response.statusCode == 200) {
 			console.log(body);
 		    }
-		})
 		channel.send(DIALOGUES[r]);
 		return true;
 	    };
