@@ -5,6 +5,7 @@ app_name = "index"
 
 urlpatterns = [
     url(r'^spawn', views.spawn, name="spawn"),
+    url(r'^list', views.list, name="list"),
     url(r'^', views.index, name="index"),
 ]
 

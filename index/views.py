@@ -16,6 +16,33 @@ def index(request):
     return render(request, 'index.html')
 
 
+def list(request):
+    '''List all channels.'''
+
+    response = collections.OrderedDict()
+    
+    if request.GET.get('token') == TOKEN:
+        slack_client = SlackClient(TOKEN)
+        channels = slack_client.api_call('channels.list')
+
+        if channels.get('ok'):
+            response['ok'] = True
+            response['channels'] = {}
+
+            for channel in channels.get('channels'):
+                response['channels'][channel.get('name')] = channel.get('id')
+
+        else:
+            response = channels
+
+    else:
+        response['ok'] = False
+        response['error'] = 'invalid token'
+
+    return HttpResponse(json.dumps(response, indent=4), \
+            content_type='application/json')
+
+
 def spawn(request):
     '''Spawn an island.'''
 
@@ -33,16 +60,15 @@ def spawn(request):
 
             #TODO: Populate Island w/ it's users
 
-            response = {'ok': 'true', ch_name: ch_id}
+            response['ok'] = True
+            response[ch_name] = ch_id
 
         else:
             response = channel_info
 
     else:
-        response = {'ok': 'false', 
-                    'error': 'invalid parameters',
-                    'request': request.GET.get('token'),
-                    'req2': TOKEN}
+        response['ok'] = False
+        response['error'] = 'invalid parameters'
 
     return HttpResponse(json.dumps(response, indent=4), \
             content_type='application/json')
